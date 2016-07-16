@@ -1,0 +1,49 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: hosts
+    lineinfile: 
+      dest: /etc/hosts 
+      regexp: '.*\s{{ item.key }}\s*$' 
+      line: "{{ item.value }}     {{ item.key }}"
+      state: present
+    with_dict: "{{ hosts }}"
+  - name: install apt requirements
+    apt: name=aptitude state=present
+  - name: update
+    apt: upgrade=yes
+    environment: "{{ proxy_env }}"
+- hosts: client
+  become: yes
+  tasks:
+  - name: install packages
+    apt: name={{ item }} state=present 
+    environment: "{{ proxy_env }}"
+    with_items:
+      - curl
+      - tcpdump
+- hosts: server
+  become: yes
+  tasks:
+  - name: install packages
+    apt: name={{ item }} state=present 
+    environment: "{{ proxy_env }}"
+    with_items:
+      - keepalived
+      - tcpdump
+  - name: keepalived config
+    template:
+      dest: /etc/keepalived/keepalived.conf
+      src: templates/keepalived.conf.j2
+      owner: root
+      group: root
+    notify:
+      - restart keepalived
+  - name: keepalived service
+    service: name=keepalived state=started enabled=yes
+  handlers:
+  - name: restart keepalived
+    service: name=keepalived state=restarted
+
+  

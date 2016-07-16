@@ -1,0 +1,4 @@
+.vagrant/
+playbook.retry
+*.swp
+*.log

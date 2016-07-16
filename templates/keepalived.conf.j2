@@ -1,0 +1,17 @@
+! Configuration File for keepalived
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface {{ servers[ansible_hostname].interface }}
+    virtual_router_id 51
+    priority {{ servers[ansible_hostname].priority }}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass {{ password }}
+    }
+    virtual_ipaddress {
+        {{ hosts["server"] }}
+    }
+}
+
